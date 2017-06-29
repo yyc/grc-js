@@ -10,7 +10,7 @@ var routes = require("./routes/index");
 
 var app = express();
 
-// view engine setu
+// view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
