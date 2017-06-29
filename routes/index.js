@@ -58,6 +58,11 @@ router.post("/postcodes", function(req, res, next) {
     res.send(response);
   });
 });
+router.get("/cdcgrc", function(req, res, next) {
+  GRC.getHierarchy().then(hierarchy => {
+    res.send(hierarchy);
+  });
+});
 
 /*router.post('/projects/:filename', function(req, res, next){
     console.log(req.body);
