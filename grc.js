@@ -1,11 +1,14 @@
 const Redis = require("ioredis");
 const fetch = require("node-fetch");
 const cheerio = require("cheerio");
+const OpenMapKey = require("./OpenMapKey");
 
 //fetch("https://google.com").then(console.log);
 
 var redis = new Redis();
 fetch.Promise = Promise;
+
+var openMapKey = undefined;
 
 // This is called after a cache miss
 async function fetchGRCCDC(postal_code) {
@@ -48,6 +51,40 @@ async function fetchGRCCDC(postal_code) {
   };
 }
 
+async function fetchSSO(postal_code) {
+  if (!isValidPC(postal_code)) {
+    return Promise.reject();
+  }
+  var token = await OpenMapKey.getKey();
+  var result = await fetch(
+    `https://developers.onemap.sg/msfservices/getSocialService?postal=${postal_code}&dist=10&token=${token}`
+  );
+  var results = await result
+    .json()
+    .then(json => Promise.resolve(json.SrchResults));
+  // results aren't sorted!
+  if (results.length < 2) {
+    var sso = "";
+  } else {
+    // Filter out the first result (it's a header thing)
+    // Then find the closest SSO in the list
+    var closestSSO = results
+      .slice(1)
+      .reduceRight(
+        (shortest, current) =>
+          shortest["Vertical_Distance"] > current["Vertical_Distance"]
+            ? current
+            : shortest
+      );
+
+    // Filter out the SSO@
+    var sso = closestSSO["NAME"].replace("Social Service Office@", "");
+  }
+
+  await redis.hset(postal_code, "sso", sso);
+  return sso;
+}
+
 // Just checking if it's a 6-digit number.
 // We can do better, but the rules https://en.wikipedia.org/wiki/Postal_codes_in_Singapore
 // are subject to change, and we don't want to have to update this every time.
@@ -65,9 +102,13 @@ function dataFnFor(type) {
     var json = await redis.hgetall(pc);
     if (json == null || Object.keys(json) == 0) {
       // We need to fetch this from the API
-      return fetchGRCCDC(pc).then(obj => {
-        obj[type];
-      });
+      if (type == "grc" || type == "cdc") {
+        return fetchGRCCDC(pc).then(obj => {
+          obj[type];
+        });
+      } else if (type == "sso") {
+        return fetchSSO(pc);
+      }
     } else {
       return Promise.resolve(json[type]);
     }
@@ -82,5 +123,3 @@ module.exports = {
   allDataFor,
   isValidPC
 };
-
-dataFnFor("grc")("138593").then(console.log);
