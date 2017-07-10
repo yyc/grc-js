@@ -8,7 +8,9 @@ async function process(postal_codes) {
     let postal_code = postal_codes[i];
     try {
       let data = await GRC.allDataFor(postal_code);
-      console.log(`${postal_code},${data.grc},${data.cdc},${data.sso}`);
+      console.log(
+        `${postal_code},${data.grc},${data.cdc},${data.div},${data.sso}`
+      );
     } catch (err) {
       console.error(err);
     }
