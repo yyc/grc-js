@@ -1,3 +1,4 @@
+require("dotenv").config();
 const should = require("should");
 const OpenMapKey = require("./../lib/OpenMapKey");
 
@@ -9,7 +10,10 @@ it("should get the key properly", done => {
       done();
     })
     .then(res => {
-      should.exist(OpenMapKey.getKey());
+      return OpenMapKey.getKey();
+    })
+    .then(key => {
+      should.exist(key);
       done();
     });
 });
