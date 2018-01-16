@@ -9,7 +9,7 @@ it("should initiate redis connection correctly", done => {
 });
 it("should retrieve SSO for a given postal code", () => {
   return grc
-    .fetchSSO(119077)
+    .fetchSSO(150003)
     .catch(err => {
       console.error(err);
       should.not.exist(err);
@@ -22,7 +22,7 @@ it("should retrieve SSO for a given postal code", () => {
 });
 it("should retrieve CDC/GRC for a given postal code", () => {
   return grc
-    .fetchGRCCDC(119077)
+    .fetchGRCCDC(150003)
     .catch(err => {
       console.error(err);
       should.not.exist(err);
@@ -40,7 +40,7 @@ it("should retrieve CDC/GRC for a given postal code", () => {
 });
 it("should quickly retrieve cached info", () => {
   return grc
-    .allDataFor(119077)
+    .allDataFor(150003)
     .catch(err => {
       console.error(err);
       should.not.exist(err);
